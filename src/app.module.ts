@@ -12,7 +12,8 @@ import { TasksModule } from './tasks/tasks.module';
       username: '12345',
       password: '12345',
       database: 'Task_management_nestjs',
-      entities: [__dirname + '/**/entities/entity{.ts,.js}']
+      entities: [__dirname + '/**/entities/*.entity{.ts,.js}'],
+      synchronize: true,
     }),
     ProjectsModule,
     TasksModule],
