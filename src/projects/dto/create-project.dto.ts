@@ -1,6 +1,12 @@
-import ProjectStatusEnum from "../enums/projectStatusEnum";
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import ProjectStatusEnum from '../enums/projectStatusEnum';
 
 export class CreateProjectDto {
-    name: string;
-    status: ProjectStatusEnum;
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsNotEmpty()
+  @IsEnum(ProjectStatusEnum)
+  status: ProjectStatusEnum;
 }
