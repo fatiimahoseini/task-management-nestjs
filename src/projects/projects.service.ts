@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,18 +23,24 @@ export class ProjectsService {
     }
   }
 
-  async findAll(status?: ProjectStatusEnum) {
-    const query = this.projectRepository.createQueryBuilder('projects')
+  async findAll(status?: ProjectStatusEnum, limit: number = 10, page: number = 1) {
+    const query = this.projectRepository.createQueryBuilder('projects');
 
     if(status){
-      query.where('status = :status', { status: status })
+      query.where('status = :status', { status: status });
     }
+    
+    query.skip((page - 1) * limit).take(limit);
 
     return await query.getMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} project`;
+  async findOne(id: number) {
+    const project = await this.projectRepository.findOneBy({ id });
+
+    if(!project) throw new NotFoundException(`Project with id ${id} not found.`);
+
+    return project;
   }
 
   update(id: number, updateProjectDto: UpdateProjectDto) {
