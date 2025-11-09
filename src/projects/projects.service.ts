@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,25 +15,28 @@ export class ProjectsService {
   constructor(
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
-  ){}
+  ) {}
 
   async create(createProjectDto: CreateProjectDto): Promise<Project> {
-    try{
-      const newProject = this.projectRepository.create(createProjectDto)
-      return await this.projectRepository.save(newProject)
-
-    } catch(e){
-      throw new BadRequestException("Error creating project!")
+    try {
+      const newProject = this.projectRepository.create(createProjectDto);
+      return await this.projectRepository.save(newProject);
+    } catch (e) {
+      throw new BadRequestException('Error creating project!');
     }
   }
 
-  async findAll(status?: ProjectStatusEnum, limit: number = 10, page: number = 1) {
+  async findAll(
+    status?: ProjectStatusEnum,
+    limit: number = 10,
+    page: number = 1,
+  ) {
     const query = this.projectRepository.createQueryBuilder('projects');
 
-    if(status){
+    if (status) {
       query.where('status = :status', { status: status });
     }
-    
+
     query.skip((page - 1) * limit).take(limit);
 
     return await query.getMany();
@@ -38,7 +45,8 @@ export class ProjectsService {
   async findOne(id: number) {
     const project = await this.projectRepository.findOneBy({ id });
 
-    if(!project) throw new NotFoundException(`Project with id ${id} not found.`);
+    if (!project)
+      throw new NotFoundException(`Project with id ${id} not found.`);
 
     return project;
   }
@@ -46,20 +54,25 @@ export class ProjectsService {
   async update(id: number, updateProjectDto: UpdateProjectDto) {
     const project = await this.projectRepository.findOneBy({ id });
 
-    if(!project) throw new NotFoundException(`Project with id ${id} not found.`);
+    if (!project)
+      throw new NotFoundException(`Project with id ${id} not found.`);
 
     try {
-      const updateProject = await this.projectRepository.update(id, updateProjectDto)
+      const updateProject = await this.projectRepository.update(
+        id,
+        updateProjectDto,
+      );
 
-      return updateProject
-
+      return updateProject;
     } catch {
-      throw new BadRequestException('Updating project failed.')
+      throw new BadRequestException('Updating project failed.');
     }
-
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} project`;
+  async remove(id: number): Promise<void> {
+    const result = await this.projectRepository.delete(id);
+
+    if (result.affected == 0)
+      throw new NotFoundException(`Project with id ${id} not found.`);
   }
 }
